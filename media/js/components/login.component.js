@@ -3,43 +3,36 @@ class Tag extends amazonia.etiqueta {
     constructor () {
         super();
         this.ruta = "media/js/components/login.template.php";
-        console.log (ajax);
     }
 
     controller () {
         this.nombre = "login";
         this.texto = "feo";
-        this.user = {
-            account: '',
-            password: '',
-            remember: false
-        };
+        this.remember = false;
 
-        this.user = new MirrorHandler(ajax, { account: '', password: '', remember: false }, 'resources/session');
+        this.user = new MirrorHandler(ajax, { account: '', password: '' }, 'resources/session');
         this.user.initialice();
+    }
+
+    $init() {
+        AuthService.session();
     }
     
     login () {
         this.user.create (this.user.createQuery())
         .then (function (xhr) {
+            let response = JSON.parse (xhr.responseText);
+            response.user
             console.log (xhr);
         })
         .catch (function (xhr) {
-            console.log (xhr);
+            let response = JSON.parse(xhr.responseText);
+            
+            console.log (response.error);
         });
 		return false;
 	}
     
-    login2 () {
-        ajax.post('rest.php', { res: 'rsession', uname: this.user.account, passw: this.user.password })
-        .then (function (xhr) {
-            console.log (xhr);
-        })
-        .catch (function (xhr) {
-
-        });
-        console.log (this.user);
-    }
 }
 
 amazonia.apps["super"].etiquetas.push({

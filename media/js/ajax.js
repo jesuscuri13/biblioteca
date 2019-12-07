@@ -66,7 +66,7 @@ function encodeDataToUrl (data) {
 }
 
 return {
-	send: function (url, object, method, headers) {
+	send: function (url, method, object, headers) {
 		return _send(xhr(), method, url, object, headers);
 	},
 	get: (url, object, headers) => { return ajax.send (url, 'get', object, headers) },

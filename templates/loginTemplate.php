@@ -18,6 +18,7 @@
 
 	<script src="media/js/ajax.js"></script>
   	<script src="media/js/app/app.frame.js"></script>
+	  <script src="media/js/services/auth.service.js"></script>
 	<script src="media/js/components/login.component.js"></script>
 	<script src="media/js/classes/MirrorHandler.js"></script>
 	

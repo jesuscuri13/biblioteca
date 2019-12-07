@@ -61,16 +61,8 @@
         _query (append) {
             this.flameData();
             let turn = {};
-
-            turn = this.data;
-            console.log (turn);
+            
             if (this.form) {
-                for (var i in this.data) {
-                    this.form.append ('i', this.data[i]);
-                }
-            }
-            return this.form ? this.form : turn;
-            /*if (this.form) {
                 for (var i in append) {
                     this.form.append (i, append[i]);
                 }
@@ -85,7 +77,7 @@
                 }
             }
             
-            return this.form ? this.form : turn;*/
+            return this.form ? this.form : turn;
         }
         _send () {
             if (!this.url) {

@@ -24,7 +24,7 @@
                         <input am-model="this.user.data.password" type="password" class="form-control" placeholder="Contraseña">
                     </div>
                     <div class="row align-items-center remember">
-                        <input type="checkbox" am-model="this.user.data.remember">Recuérdame
+                        <input type="checkbox" am-model="this.remember">Recuérdame
                     </div>
                     <div class="form-group">
                         <input type="submit" value="Login" class="btn float-right login_btn">

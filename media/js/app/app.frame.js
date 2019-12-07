@@ -101,17 +101,14 @@ class Attribute extends amazonia.atributo {
                     this.element.setAttribute (this.cloned.attributes.item(j).nodeName, this.cloned.attributes.item(j).nodeValue);
                 }
 
-                this.refact (this.element, this.cloned);
-                //if (this.cloned.innerHTML != this.element.innerHTML) {
-                //    this.element.innerHTML = this.cloned.innerHTML;
-                //}
+                //this.refact (this.element, this.cloned);
             }
             
             this.$scope.component[this.renderizable] = this.content;
             this.$scope.component.$index = this.index;
         }
     }
-
+    /*
     refact (element, clone) {
         if (element instanceof Text) {
             element.data = clone.data;
@@ -127,7 +124,7 @@ class Attribute extends amazonia.atributo {
             }
         }
         
-    }
+    }*/
     
 }
 
@@ -206,16 +203,12 @@ class Attribute extends amazonia.atributo {
 
     controller () {
         let $ctrl = this;
-
-
-        
         $ctrl.$init = function () {
 
             $ctrl.element.addEventListener ('click', function () {
                 $ctrl.hasToRun = true;
+                setTimeout (() => {$ctrl.app.aplicar();$ctrl.app.aplicar();}, 0);
                 
-                $ctrl.app.aplicar();
-                $ctrl.app.aplicar();
             });
         }
         
@@ -227,9 +220,7 @@ class Attribute extends amazonia.atributo {
             let captured = $ctrl.value;
             let funct = function () {
                 eval (captured);
-                //console.log (captured);
             };
-            //console.log ($ctrl.$scope);
             funct.call($ctrl.$scope.component);
             this.hasToRun = false;
         }
@@ -253,9 +244,31 @@ class Attribute extends amazonia.atributo {
 
     controller () {
         let $ctrl = this;
+        $ctrl.$init = function () {
+            $ctrl.app.captureWatch ($ctrl);
+        }
+        $ctrl.$render = function () {
+            $ctrl.element.value = $ctrl.getValue();
+        }
+    }
+    
+}
 
+amazonia.apps["super"].atributos.push({
+    nombre: "am-value",
+    create: Attribute
+});
+}
 
-        
+{
+class Attribute extends amazonia.atributo {
+    constructor () {
+        super();
+        this.hasToRun = false;
+    }
+
+    controller () {
+        let $ctrl = this;
         $ctrl.$init = function () {
             let $ctrl = this;
             $ctrl.element.addEventListener ('submit', function (evt) {
@@ -267,7 +280,7 @@ class Attribute extends amazonia.atributo {
                 };
                 funct.call($ctrl.$scope.component);
                 
-                $ctrl.app.aplicar();
+                setTimeout (() => {$ctrl.app.aplicar();}, 0);
             });
         }
         
@@ -294,7 +307,7 @@ class Attribute extends amazonia.atributo {
 
     controller () {
         let $ctrl = this;
-
+        
         this.$render = function () {
             let captured = 'capturedText = ' + $ctrl.value;
             let funct = function () {
@@ -330,49 +343,112 @@ class Attribute extends amazonia.atributo {
 
     controller () {
         let $ctrl = this;
+        let lastPrinted;
 
         $ctrl.$init = function () {
             $ctrl.app.captureWatch ($ctrl);
 
             if ($ctrl.element.nodeName == 'INPUT') {
                 if ($ctrl.element.getAttribute ('type') == 'text'
-                    || $ctrl.element.getAttribute ('type') == 'password') {
+                    || $ctrl.element.getAttribute ('type') == 'password'
+                    || $ctrl.element.getAttribute ('type') == 'hidden') {
                     $ctrl.element.addEventListener ('input', function () {
-                        $ctrl.asignValue($ctrl.element.value);
-                        $ctrl.app.aplicar();
+                        $ctrl.asignValue ($ctrl.element.value);
+                        setTimeout (() => {$ctrl.app.aplicar()}, 1);
                     });
                 }
 
                 if ($ctrl.element.getAttribute ('type') == 'checkbox') {
                     $ctrl.element.addEventListener ('change', function () {
-                        $ctrl.asignValue($ctrl.element.checked);
-                        $ctrl.app.aplicar();
+                        $ctrl.hasToRun = true;
+                        setTimeout (() => {$ctrl.app.aplicar();$ctrl.app.aplicar();}, 1);
                     });
+                }
+
+                if ($ctrl.element.getAttribute ('type') == 'radio') {
+                    $ctrl.element.addEventListener ('change', function() {
+                        $ctrl.hasToRun = true;
+                        setTimeout (() => {$ctrl.app.aplicar();$ctrl.app.aplicar();}, 1);
+                    })
                 }
                 
             } else if ($ctrl.element.nodeName == 'TEXTAREA') {
                 $ctrl.element.addEventListener ('input', function () {
                     $ctrl.asignValue($ctrl.element.value);
-                    $ctrl.app.aplicar();
+                    setTimeout (() => {$ctrl.app.aplicar()});
                 });
+            } else if ($ctrl.element.nodeName == 'SELECT') {
+                $ctrl.element.addEventListener ('change', function () {
+                    let value = $ctrl.element.multiple ? Array.from($ctrl.element.selectedOptions).map(v=>v.value) : $ctrl.element.value;
+                    $ctrl.asignValue(value);
+                    setTimeout (() => {$ctrl.app.aplicar()});
+                    
+                })
             }
             
         }
 
         $ctrl.$render = function () {
-            if ($ctrl.element.nodeName == 'INPUT') {
-                if ($ctrl.element.getAttribute ('type') == 'text'
-                    || $ctrl.element.getAttribute ('type') == 'password') {
-                    $ctrl.element.value = $ctrl.getValue();
-                }
-                    
-                if ($ctrl.element.getAttribute ('type') == 'checkbox') {
-                    $ctrl.element.checked = !!$ctrl.getValue();
-                }
-            } else if ($ctrl.element.nodeName == 'TEXTAREA') {
-                $ctrl.element.value = $ctrl.getValue(); 
-            }
+            let curr = $ctrl.getValue();
+            let haveToChange = lastPrinted !== curr;
+            lastPrinted = curr;
             
+            
+            switch ($ctrl.element.nodeName) {
+                case 'INPUT':
+                    if ($ctrl.element.getAttribute ('type') == 'text'
+                        || $ctrl.element.getAttribute ('type') == 'password'
+                        || $ctrl.element.getAttribute ('type') == 'hidden') {
+                        if ($ctrl.element.value !== curr) {
+                            $ctrl.element.value = curr;
+                        }
+                        
+                    }
+                        
+                    if ($ctrl.element.getAttribute ('type') == 'checkbox') {
+                        if ($ctrl.hasToRun) {
+                            $ctrl.asignValue($ctrl.element.checked);
+                            $ctrl.hasToRun = false;
+                        }
+                        if ($ctrl.element.checked != curr) {
+                            $ctrl.element.checked = curr;
+                        }
+                    }
+
+                    if ($ctrl.element.getAttribute ('type') == 'radio') {
+                        if ($ctrl.hasToRun) {
+                            $ctrl.asignValue ($ctrl.element.value);
+                            $ctrl.hasToRun = false;
+                        }
+                        if ($ctrl.element.checked != ($ctrl.element.value == curr)) {
+                            $ctrl.element.checked = $ctrl.element.value == curr;
+                        }
+                        
+                    }
+                    break;
+                case 'TEXTAREA':
+                    if ($ctrl.element.value !== curr) {
+                        $ctrl.element.value = curr;
+                    }
+                        
+                    
+                    break;
+                case 'SELECT':
+                    if ($ctrl.element.multiple) {
+                        let vals = $ctrl.getValue();
+                        for (let i = 0; i < $ctrl.element.options.length; i++) {
+                            let e = $ctrl.element.options[i];
+                            if (e.selected != vals.indexOf (e.value) >= 0) {
+                                e.selected = vals.indexOf (e.value) >= 0;
+                            }
+                        }
+                    } else {
+                        if ($ctrl.element.value != curr) {
+                            $ctrl.element.value = curr;
+                        }
+                    }
+                    break;
+            }
         }
     }
     
