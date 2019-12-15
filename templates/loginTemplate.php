@@ -24,6 +24,6 @@
 	
 </head>
 <body>
-  <app-login></app-login>
+  <app-login class="alskdj"></app-login>
 </body>
 </html>

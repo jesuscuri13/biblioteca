@@ -6,12 +6,15 @@ class Tag extends amazonia.etiqueta {
     }
 
     controller () {
-        this.nombre = "login";
+        this.nombre = "Login";
         this.texto = "feo";
         this.remember = false;
 
         this.user = new MirrorHandler(ajax, { account: '', password: '' }, 'resources/session');
         this.user.initialice();
+
+        this.iff = false;
+        this.repeated = ['asds', '23213'];
     }
 
     $init() {
@@ -19,7 +22,8 @@ class Tag extends amazonia.etiqueta {
     }
     
     login () {
-        this.user.create (this.user.createQuery())
+        console.log (this.user);
+        /*this.user.create (this.user.createQuery())
         .then (function (xhr) {
             let response = JSON.parse (xhr.responseText);
             response.user
@@ -30,13 +34,14 @@ class Tag extends amazonia.etiqueta {
             
             console.log (response.error);
         });
-		return false;
+		return false;*/
 	}
     
 }
 
 amazonia.apps["super"].etiquetas.push({
     nombre: "app-login",
-    create: Tag
+    create: Tag,
+    ruta: "media/js/components/login.template.php"
 });
 }

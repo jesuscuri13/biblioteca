@@ -11,6 +11,39 @@ amazonia.apps["super"].encender();
 class Attribute extends amazonia.atributo {
     constructor () {
         super();
+        this.hasToRun = false;
+    }
+
+    $render() {
+        let $ctrl = this;
+        let captured = $ctrl.value;
+        let funct = function () {
+            return eval (captured);
+        }
+        console.log ($ctrl.$scope);
+        let data = funct.call ($ctrl.$scope);
+        if (!data) {
+            console.log ("false");
+            this.app.convertNodeToNone (this.nodeElement);
+        } else {
+            this.app.evaluated = false;
+        }
+        
+    }
+    
+}
+
+amazonia.apps["super"].atributos.push({
+    nombre: "am-if",
+    create: Attribute
+});
+}
+
+
+{
+class Attribute extends amazonia.atributo {
+    constructor () {
+        super();
         this.repeated = [];
     }
 
@@ -22,14 +55,13 @@ class Attribute extends amazonia.atributo {
         this.$render = function () {
             
             let $ctrl = this;
-            if (!this.data) {
-                this.first = true;
-                this.repeated = [this];
-                this.cloned = this.$scope.element.cloneNode(true);
-                this.cloned.setAttribute ("data-am-id", null);
+            if (!this.nodeElement.repeatData) {
+                this.cloned = this.app.cloneNodeElement (this.nodeElement, true);
+                this.nodeElement.first = true;
+                this.repeated = [this.nodeElement];
             }
             
-            if (this.first) {
+            if (this.nodeElement.first) {
                 let exp = /^let ([a-z|A-Z_]+[a-zA-Z\d_]*) in ([a-z|A-Z_]+\w*[.?\w\[\]]*)$/;
             
                 let captured = exp.exec ($ctrl.value);
@@ -41,50 +73,40 @@ class Attribute extends amazonia.atributo {
                     return eval (captured[2]);
                 };
 
-                let data = funct.call(this.$scope.component);
+                let data = funct.call(this.$scope);
                 
-                this.data = data;
+                this.nodeElement.repeatData = data;
                 
-                if (this.data.length > 0) {
-                    this.content = this.data[0];
-                }
-                let attrib = null;
-                
-                for (let i in this.app.atributos) {
-                    if (this.app.atributos[i].nombre == "am-repeat") {
-                        attrib = this.app.atributos[i];
-                    }
-                }
-                
-                if (!attrib) {
-                    throw "No se pudo encontrar el atributo am-repeat";
+                if (this.nodeElement.repeatData.length > 0) {
+                    this.nodeElement.repeatContent = this.nodeElement.repeatData[0];
                 }
                 
                 let count = 0;
-                for (let i in this.data) {
+                for (let i in this.nodeElement.repeatData) {
                     if (!this.repeated[i]) {
-                        let clone = this.cloned.cloneNode(true);
-                        this.$scope.element.parentNode.appendChild (clone);
-
-                        let attached = this.app.appendAttribute (clone, attrib);
-                        attached.cloned = this.cloned;
-                        attached.first = false;
-                        this.repeated[i] = attached;
+                        let clone = this.app.cloneNodeElement (this.cloned, true);
+                        console.log (clone);
+                        this.app.appendNodeElement (this.nodeElement.parent, clone);
+                        this.repeated[i] = clone;
+                        console.log (this.repeated[i]);
                     }
 
-                    this.repeated[i].renderizable = captured[1];
-                    this.repeated[i].data = this.data;
-                    this.repeated[i].content = this.data[i];
-                    this.repeated[i].index = i;
+                    this.repeated[i].repeatRenderizable = captured[1];
+                    this.repeated[i].repeatData = this.nodeElement.repeatData;
+                    this.repeated[i].repeatContent = this.nodeElement.repeatData[i];
+                    this.repeated[i].repeatIndex = i;
 
                     count++;
                 }
+
+                console.log (count, this.repeated);
                 
                 if (count < this.repeated.length) {
                     for (let i = count; i < this.repeated.length; i++) {
                         if (this.repeated[i].first) {
-                            
+                            this.app.convertNodeToNone (this.repeated[i]);
                         } else {
+                            this.app.removeNodeElement (this.repeated[i].parent, this.repeated[i]);
                             if (this.repeated[i].element.parentNode) {
                                 this.repeated[i].element.parentNode.removeChild (this.repeated[i].element);
                             }
@@ -95,17 +117,8 @@ class Attribute extends amazonia.atributo {
                 }
             }
             
-            for (var j = 0; j < this.cloned.attributes.length; j++) {
-                if (this.cloned.attributes.item(j).nodeName != 'data-am-id') {
-                    this.element.removeAttribute (this.cloned.attributes.item(j).nodeName);
-                    this.element.setAttribute (this.cloned.attributes.item(j).nodeName, this.cloned.attributes.item(j).nodeValue);
-                }
-
-                //this.refact (this.element, this.cloned);
-            }
-            
-            this.$scope.component[this.renderizable] = this.content;
-            this.$scope.component.$index = this.index;
+            this.$scope[this.nodeElement.repeatRenderizable] = this.nodeElement.repeatContent;
+            this.$scope.$index = this.nodeElement.repeatIndex;
         }
     }
     /*
@@ -133,7 +146,7 @@ amazonia.apps["super"].atributos.push({
     create: Attribute
 });
 }
-{
+/*{
 class Attribute extends amazonia.atributo {
     constructor () {
         super();
@@ -148,7 +161,7 @@ class Attribute extends amazonia.atributo {
             return capturedText;
         };
 
-        let data = funct.call(this.$scope.component);
+        let data = funct.call(this.$scope);
 
         this.element.checked = !!data;
         
@@ -176,7 +189,7 @@ class Attribute extends amazonia.atributo {
             return capturedText;
         };
 
-        let data = funct.call(this.$scope.component);
+        let data = funct.call(this.$scope);
 
         
         if (data) {
@@ -221,7 +234,7 @@ class Attribute extends amazonia.atributo {
             let funct = function () {
                 eval (captured);
             };
-            funct.call($ctrl.$scope.component);
+            funct.call($ctrl.$scope);
             this.hasToRun = false;
         }
         
@@ -259,7 +272,7 @@ amazonia.apps["super"].atributos.push({
     create: Attribute
 });
 }
-
+*/
 {
 class Attribute extends amazonia.atributo {
     constructor () {
@@ -278,7 +291,7 @@ class Attribute extends amazonia.atributo {
                 let funct = function () {
                     eval (captured);
                 };
-                funct.call($ctrl.$scope.component);
+                funct.call($ctrl.$scope);
                 
                 setTimeout (() => {$ctrl.app.aplicar();}, 0);
             });
@@ -297,7 +310,7 @@ amazonia.apps["super"].atributos.push({
     create: Attribute
 });
 }
-
+/*
 
 {
 class Attribute extends amazonia.atributo {
@@ -316,7 +329,7 @@ class Attribute extends amazonia.atributo {
                 return capturedText;
             };
 
-            let data = funct.call(this.$scope.component);
+            let data = funct.call(this.$scope);
             for (let i in data) {
                 if (data[i]) {
                     this.element.classList.add(i);
@@ -334,7 +347,7 @@ amazonia.apps["super"].atributos.push({
     create: Attribute
 });
 }
-
+*/
 {
 class Attribute extends amazonia.atributo {
     constructor () {

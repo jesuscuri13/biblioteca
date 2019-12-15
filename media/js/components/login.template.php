@@ -1,8 +1,11 @@
 <div class="container main">
+    <div am-if="this.iff">
+        aslkdjaslkjd
+    </div>
     <div class="d-flex justify-content-center h-100">
         <div class="card">
             <div class="card-header">
-                <h3>Iniciar Sesión</h3>
+                <h3>{{this.nombre}}</h3>
                 <div class="d-flex justify-content-end social_icon">
                     <span><i class="fab fa-facebook-square"></i></span>
                     <span><i class="fab fa-google-plus-square"></i></span>
